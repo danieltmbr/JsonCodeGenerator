@@ -2,7 +2,6 @@
 A tiny webpage (html, css, js), which helps you to create DTO classes in SWIFT from JSON for Networking.
 
 ###Purpose
-__________
 
 In iOS developement it's not so rare to use [Alamofire][Alamofire link] and [SwiftyJSON][SwiftyJSON link] together for networking & parsing.
 If you do as well, you certainly has taken benefit of SWIFT's generics for type-safe serialization [(_as the documentation of Alamofire shows_)](http://cocoadocs.org/docsets/Alamofire/3.1.5/#generic-response-object-serialization), combined with [SwiftyJSON][SwiftyJSON link] initialization.
@@ -10,7 +9,6 @@ If you do as well, you certainly has taken benefit of SWIFT's generics for type-
 This webpage generates SWIFT classes, with a [SwiftyJSON][SwiftyJSON link] initializer, including all the properties contained by the JSON input.
 
 ###Preferences
-______________
 
 * **Declare properties as 'let':** 
  
@@ -24,9 +22,8 @@ ______________
 * **Allow recursion (create DTOs for for inner objects):**
 
  By cheking this option, you enable to generate classes recursively for non primitive objects contained by the _JSON_.
- 
+
 ####Other features
-__________________
 
 * Generate NSDate optional initializer for a given format
 

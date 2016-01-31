@@ -25,47 +25,52 @@ function getType(key, value, recursive) {
 		
 		case "boolean":
 
-			return {type: "bool", array: false};
+			return {type: "bool", array: false, custom: false};
 
 		case "number":
 
 			if(intEnabled() && value % 1 === 0) {
-				return {type: "int", array: false};
+				return {type: "int", array: false, custom: false};
 			} else {
-				return {type: "double", array: false};
+				return {type: "double", array: false, custom: false};
 			}
 
 		case "string":
 
 			if(!isNaN(Date.parse(value, getDateFormat()))) {
-				return {type: "date", array: false};
+				return {type: "date", array: false, custom: false};
 			} else {
-				return {type: "string", array: false};
+				return {type: "string", array: false, custom: false};
 			}
 
 		case "object":
 
 			if(Array.isArray(value)) {
-				console.log("It's an array");
+				if(value.length == 0) {
+					return {type: "AnyObject", array: true, custom: false};
+				} else {
+					var type = getType(key, value[0], recursive);
+					return {type: type.type, array: true, custom: type.custom};
+				}
 			} else {
 				if(recursive) {
 					var className = capitalise(key)+"DTO";
 					createClass(className, value);
-					return {type: className, array: false};
+					return {type: className, array: false, custom: true};
 				} else {
-					return {type: "json", array: false};
+					return {type: "json", array: false, custom: true};
 				}
 			}
 
 		default:
-			return {type: "undefined", array: false}
+			return {type: "undefined", array: false, custom: true}
 	}
 
 }
 
 function createPropertyObject(key, value) {
 	var pType = getType(key, value, recursionEnabled());
-	return {"name": key, "type":pType.type, "array":pType.array};
+	return {"name": key, "type":pType.type, "array":pType.array, custom: pType.custom};
 }
 
 /* Function for creating Styled HTML output */
@@ -73,23 +78,40 @@ function createPropertyObject(key, value) {
 function getSwiftType(property) {
 	if(property.type == "date") {
 		return "NSDate?";
-	} else if(property.array) {
-		return "["+capitalise(poperty.type)+"]";
 	} else {
-		return capitalise(property.type);
-	}
+		var output = capitalise(property.type);
+		if(property.custom) {
+			output = "<span class=\"replace\">"+output+"</span>";
+		}
+		if(property.array) {
+			output = "["+output+"]";
+		}
+		return output
+	} 
 }
 
 function propertyToHtml(property, enabledLet) {
 	var def = enabledLet ? "let" : "var";
-	return "<span class=\"definition\">"+def+"</span> "+property.name+": <span class=\"type\">"+getSwiftType(property)+"</span>\n";
+	var output = "<span class=\"definition\">"+def+"</span> "+property.name+": <span class=\"type\">"+getSwiftType(property)+"</span>";
+	if((property.custom && !property.array) || (property.array && !property.custom)) {
+		output += "?";
+	}
+	return output + "\n";
 }
 
 function propertyParseToHtml(property) {
 	if(property.type == "date") {
 		return "<span class=\"var\">"+property.name+"</span> = <span class=\"type\">NSDate</span>(dateString: json[<span class=\"string\">\""+property.name+"\"</span>].<span class=\"var\">stringValue</span>)\n";
 	} else if(property.array) {
-		return ;
+
+		if(property.custom) {
+			return "<span class=\"var\">"+property.name+"</span> = <span class=\"replace\">"+property.type+"</span>.<span class=\"var\">collection</span>(json[<span class=\"string\">\""+property.name+"\"</span>])\n";
+		} else {
+			return "<span class=\"var\">"+property.name+"</span> = json[<span class=\"string\">\""+property.name+"\"</span>].<span class=\"var\">arrayObject</span> <span class=\"definition\">as</span>? <span class=\"type\">"+getSwiftType(property)+"</span>\n";
+		}
+
+	} else if(property.custom) {
+		return "<span class=\"var\">"+property.name+"</span> = <span class=\"replace\">"+property.type+"</span>(json: json[<span class=\"string\">\""+property.name+"\"</span>])\n";
 	} else {
 		return "<span class=\"var\">"+property.name+"</span> = json[<span class=\"string\">\""+property.name+"\"</span>].<span class=\"var\">"+property.type+"Value</span>\n";
 	}
@@ -105,7 +127,7 @@ function createClassHtmlOutput(name, properties) {
 		htmlInitProperties += "\t\t"+propertyParseToHtml(element);
 	});
 
-	var classOutput = "<span class=\"definition\">final class</span> <span class=\"replace\"><#"+name+"#></span>: <span class=\"var\">ResponseJSONSerializable";
+	var classOutput = "<span class=\"definition\">final class</span> <span class=\"replace\">"+name+"</span>: <span class=\"var\">ResponseJSONSerializable";
 
 	if (collectionEnabled()) {
 		classOutput += ", ResponseJSONCollectionSerializable";
@@ -118,10 +140,10 @@ function createClassHtmlOutput(name, properties) {
 	classOutput += "\t}\n";
 
 	if(collectionEnabled()) {
-		classOutput += "\n\t<span class=\"definition\">static func</span> collection(json: <span class=\"var\">JSON</span>) -> [<span class=\"replace\"><#"+name+"#></span>] {\n";
-		classOutput += "\t\t<span class=\"definition\">var</span> items = [<span class=\"replace\"><#"+name+"#></span>]()\n";
+		classOutput += "\n\t<span class=\"definition\">static func</span> collection(json: <span class=\"var\">JSON</span>) -> [<span class=\"replace\">"+name+"</span>] {\n";
+		classOutput += "\t\t<span class=\"definition\">var</span> items = [<span class=\"replace\">"+name+"</span>]()\n";
 		classOutput += "\t\t<span class=\"definition\">for</span> (_,subJson):(<span class=\"type\">String</span>, <span class=\"var\">JSON</span>) in json {\n";
-		classOutput += "\t\t\t<span class=\"definition\">if let</span> item = <span class=\"replace\"><#"+name+"#></span>(json: subJson) {\n";
+		classOutput += "\t\t\t<span class=\"definition\">if let</span> item = <span class=\"replace\">"+name+"</span>(json: subJson) {\n";
 		classOutput += "\t\t\t\titems.append(item)\n";
 		classOutput += "\t\t\t}\n";
 		classOutput += "\t\t}\n";

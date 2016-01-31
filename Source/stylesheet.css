@@ -83,6 +83,14 @@ span.replace {
 	background-color: rgb(222, 237, 253);
 }
 
+span.replace::before {
+	content: "<#";
+}
+
+span.replace::after {
+	content: "#>";
+}
+
 .hidden {
 	display: none;
 }
