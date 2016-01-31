@@ -1,0 +1,87 @@
+<!doctype html>
+<head>
+<title>JSON to Swift Converter</title>
+<link rel="stylesheet" type="text/css" href="stylesheet.css">
+<script type="text/javascript" src="converter.js"></script>
+<head>
+<body>
+
+<h1>JSON to Swift converter</h1>
+
+<div class="preferences">
+<form>	
+	<input type="checkbox" id="cb-let" checked="checked">Declare properties as 'let'<br/>
+	<input type="checkbox" id="cb-double" checked="checked">Always declare number-value-properties as Double<br/>
+	<input type="checkbox" id="cb-collection" checked="checked">Generate collection initializer<br/>
+	<input type="checkbox" id="cb-recursive" checked="checked">Allow recursion (create DTOs for for inner objects)<br/>
+	<!-- yyyy-MM-dd'T'HH:mm:ss.SSSZ - 2015-07-04T23:10:00.000+02:00 -->
+	<br/>Date format: <input type="text" id="tb-dateformat" value="yyyy-MM-dd'T'HH:mm:ss.SSSZ"/><br/><input id="b-convert" type="button" value="Generate NSDate initializer for this format" onclick="generateDateExtension()" style="width:294px;" />
+	<pre><code id="date-extension"></code></pre>
+<br/>
+</form>
+</div>
+
+<div class="input">
+<h3>JSON:</h3>
+<form>
+	<textarea id="ta-json" placeholder="Insert your JSON here..." autofocus>{
+	"id":0,
+	"fullName":"String",
+	"created":"2015-07-04T23:10:00.000+02:00",
+	"approved": false,
+	"state":"String",
+	"zipCode":"2000",
+	"description":"String",
+	"motto":"String",
+	"memberCount": 1111,
+	"enabled":true,
+	"accessToken":"String",
+	"email":"String",
+	"followerCount": 1212,
+	"location": {
+		"latitude":  47.16884,
+		"longitude": 19.134245,
+		"address":"String",
+		"addressAdditional":"String"
+	},
+	"currentUserFollows":true
+}</textarea>	
+	<input id="b-convert" type="button" value="Convert" onclick="convert()" />
+</form>
+</div>
+
+<div class="output">
+<h3>Swift:</h3>
+<pre>
+<code id="swift"><span class="definition">final class</span> <span class="replace"><#ClassName#></span>: <span class="var">ResponseJSONSerializable, ResponseJSONCollectionSerializable</span> {
+
+    <span class="definition">let</span> type: <span class="type">String</span>
+    <span class="definition">let</span> contact: <span class="type">String</span>
+    <span class="definition">let</span> privacyPolicy: <span class="type">String</span>
+    <span class="definition">let</span> toc: <span class="type">String</span>
+    
+    <span class="definition">required init</span>?(json: <span class="var">JSON</span>) {
+        <span class="var">type</span> = json[<span class="string">"type"</span>].<span class="var">stringValue</span>
+        <span class="var">contact</span> = json[<span class="string">"contact"</span>].<span class="var">stringValue</span>
+        <span class="var">privacyPolicy</span> = json[<span class="string">"privacyPolicy"</span>].<span class="var">stringValue</span>
+        <span class="var">toc</span> = json[<span class="string">"termsAndConditions"</span>].<span class="var">stringValue</span>
+    }
+    <span class="collection hidden">
+    <span class="definition">static func</span> collection(json: <span class="var">JSON</span>) -> [<span class="replace"><#Class#></span>] {
+	    
+	    <span class="definition">var</span> items = [<span class="replace"><#Class#></span>]()
+	    <span class="definition">for</span> (_,subJson):(<span class="type">String</span>, <span class="var">JSON</span>) in json {
+	        <span class="definition">if let</span> item = <span class="replace"><#Class#></span>(json: subJson) {
+	            items.append(item)
+	        }
+	    }
+	    <span class="definition">return</span> items
+    }
+    </span>
+}
+</code>
+</pre>
+</div>
+
+</body>
+</html>
