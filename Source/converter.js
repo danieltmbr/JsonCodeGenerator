@@ -2,14 +2,20 @@
 var classes = {};
 
 function convert() {
-	clearData()
+	removeError();
+	clearData();
 	parseJson(getJson(), "ClassName");
 	displayCode(assembleOutput(classes));
 }
 
 function parseJson(json, className) {
 
-	var object = JSON.parse(json);
+	try {
+    	var object = JSON.parse(json);
+	} catch(err) {
+		invalidInput();
+	    // document.getElementById("demo").innerHTML = err.message;
+	}
 	createClass(className, object);
 }
 
@@ -218,6 +224,16 @@ function displayCode(swiftCode) {
 
 function displayDateExtension(dateHtml) {
 	document.getElementById("date-extension").innerHTML = dateHtml;
+}
+
+function invalidInput() {
+	document.getElementById("h3-json").className = "error";
+	document.getElementById("ta-json").className = "error";
+}
+
+function removeError() {
+	document.getElementById("h3-json").className = "";
+	document.getElementById("ta-json").className = "";
 }
 
 function clearData() {
