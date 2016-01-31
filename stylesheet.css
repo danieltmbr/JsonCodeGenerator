@@ -1,0 +1,88 @@
+html {
+	font-family: "HelveticaNeue-Light", "Helvetica";
+	color: #111;
+
+}
+
+body {
+	margin: 12px;
+}
+
+h1 {
+	font-family: "HelveticaNeue-Thin";
+	font-weight: normal;
+	text-transform: uppercase;
+}
+
+h3 {
+	font-family: "HelveticaNeue-Light";
+	font-weight: normal;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+}
+
+input[type="button"] {
+	min-width: 120px;
+	min-height: 24px;
+	color: #FFF;
+	font-family: "HelveticaNeue";
+	border: 0;
+	border-radius: 4px;
+	background-color: rgb(59, 153, 252);
+	font-size: 14px;
+	margin-top: 8px;
+}
+
+input[type="text"] {
+	min-width: 200px;
+	border-width: 1px;
+	border-radius: 3px;
+	border-color: #AAA;
+	min-height: 18px;
+}
+
+textarea#ta-json {
+	width: 100%;
+	max-width: 100%;
+	min-height: 300px;
+
+	border-radius: 5px;
+	border-color: #777;
+}
+
+pre {
+	margin: 0;
+	-moz-tab-size: 4;
+	-o-tab-size: 4;
+	tab-size: 4;
+}
+
+code {
+	font-family: "Menlo-Regular";
+	font-size: 11px;
+}
+
+span.definition {
+	color: rgb(207, 0, 160);
+}
+
+span.var {
+	color: rgb(60, 130, 147);
+}
+
+span.type {
+	color: rgb(127, 27, 171);
+}
+
+span.string {
+	color: rgb(229, 0, 0);
+}
+
+span.replace {
+	border-radius: 6px;
+	background-color: rgb(222, 237, 253);
+}
+
+.hidden {
+	display: none;
+}
