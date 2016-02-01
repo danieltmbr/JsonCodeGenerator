@@ -238,3 +238,15 @@ function removeError() {
 function clearData() {
 	classes = {};
 }
+
+/* Info page */
+
+function openInfo() {
+	document.getElementById("content").className = "blured";
+	document.getElementById("info").className = "";
+}
+
+function closeInfo() {
+	document.getElementById("content").className = "";
+	document.getElementById("info").className = "hidden";
+}

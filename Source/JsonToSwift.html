@@ -1,33 +1,36 @@
 <!doctype html>
+<html>
 <head>
 <title>JSON to Swift Converter</title>
 <link rel="stylesheet" type="text/css" href="stylesheet.css">
 <script type="text/javascript" src="converter.js"></script>
 <head>
 <body>
+<div id="content">
 
 <h1>JSON to Swift converter</h1>
 
+<h5 onclick="openInfo()">Readme & FAQ</h5>
+
 <div id="preferences">
-<form>	
-	<div><input type="checkbox" id="cb-let" checked="checked"/>Declare properties as 'let'</div>
-	<div><input type="checkbox" id="cb-double" checked="checked"/>Always declare number-value-properties as Double</div>
-	<div><input type="checkbox" id="cb-collection" checked="checked"/>Generate collection initializer</div>
-	<div><input type="checkbox" id="cb-recursive" checked="checked"/>Allow recursion (create DTOs for for inner objects)</div>
-	<!-- yyyy-MM-dd'T'HH:mm:ss.SSSZ - 2015-07-04T23:10:00.000+02:00 -->
-	<div class="date">
-	<div>Date format: <input type="text" id="tb-dateformat" value="yyyy-MM-dd'T'HH:mm:ss.SSSZ"/></div>
-	<div><input id="b-convert" type="button" value="Generate NSDate initializer for this format" onclick="generateDateExtension()" style="width:294px;" /></div>
-	<br/><div><pre><code id="date-extension"></code></pre></div>
-	</div>
-<br/>
-</form>
+	<form>	
+		<div><input type="checkbox" id="cb-let" checked="checked"/>Declare properties as 'let'</div>
+		<div><input type="checkbox" id="cb-double" checked="checked"/>Always declare number-value-properties as Double</div>
+		<div><input type="checkbox" id="cb-collection" checked="checked"/>Generate collection initializer</div>
+		<div><input type="checkbox" id="cb-recursive" checked="checked"/>Allow recursion (create DTOs for for inner objects)</div>
+		<!-- yyyy-MM-dd'T'HH:mm:ss.SSSZ - 2015-07-04T23:10:00.000+02:00 -->
+		<div class="date">
+		<div>Date format: <input type="text" id="tb-dateformat" value="yyyy-MM-dd'T'HH:mm:ss.SSSZ"/></div>
+		<div><input id="b-convert" type="button" value="Generate NSDate initializer for this format" onclick="generateDateExtension()" style="width:294px;" /></div><br/>
+		<div style="margin: 0;"><pre><code id="date-extension"></code></pre></div>
+		</div>
+	</form>
 </div>
 
 <div id="input">
-<h3 id="h3-json">JSON:</h3>
-<form>
-	<textarea id="ta-json" placeholder="Insert your JSON here..." autofocus>{
+	<h3 id="h3-json">JSON:</h3>
+	<form>
+		<textarea id="ta-json" placeholder="Insert your JSON here..." autofocus>{
 	"id":0,
 	"fullName":"String",
 	"created":"2015-07-04T23:10:00.000+02:00",
@@ -43,46 +46,172 @@
 		"address":"String",
 		"addressAdditional":"String"
 	},
-        "objectArray": [{
+	"objectArray": [{
 		"propr1":  47.16884,
 		"prop2":"String"
 	}],
-        "emptyArray": [],
-        "intArray": [1, 2, 3]
+	"emptyArray": [],
+	"intArray": [1, 2, 3]
 }</textarea>	
-	<input id="b-convert" type="button" value="Convert" onclick="convert()" />
-</form>
+		<input id="b-convert" type="button" value="Convert" onclick="convert()" />
+	</form>
 </div>
 
 <div id="output">
-<h3>Swift:</h3>
-<pre><code id="swift"><!--<span class="definition">final class</span> <span class="replace">ClassName</span>: <span class="var">ResponseJSONSerializable, ResponseJSONCollectionSerializable</span> {
+	<h3>Swift:</h3>
+	<pre><code id="swift"></code></pre>
+</div>
 
-    <span class="definition">let</span> type: <span class="type">String</span>
-    <span class="definition">let</span> contact: <span class="type">String</span>
-    <span class="definition">let</span> privacyPolicy: <span class="type">String</span>
-    <span class="definition">let</span> toc: <span class="type">String</span>
+<footer>2016 - Created by <a href="mailto:t.dani12@gmail.com">danieltmbr</a>;</footer>
+
+</div>
+
+<div id="info" class="hidden">
+
+<h5 onclick="closeInfo()">[Close]</h5>
+
+<div id="readme">
+
+<h1>Readme</h1>
+A tiny webpage (html, css, js), which helps you to create DTO classes in SWIFT from JSON for Networking.
+
+<h3>Purpose</h3>
+
+<p>In iOS developement it's not so rare to use Alamofire and SwiftyJSON together for networking & parsing. If you do as well, you certainly has taken benefit of SWIFT's generics for type-safe serialization (as the documentation of Alamofire shows), combined with SwiftyJSON initialization.<br/>
+This webpage generates SWIFT classes, with a SwiftyJSON initializer, including all the properties contained by the JSON input.</p>
+
+<h3>Features</h3>
+
+<ul>
+	<li>JSON verification</li>
+	<li>Recognize Int, Double, String, Bool, Date (by a given format) Array (even empty array), custom object</li>
+	<li>Create classes recursively</li>
+	<li>Define class properties, declare init(json) & collection(json) functions</li>
+	<li>Generate NSDate extension with optional initializer for the given format</li>
+	<li>Give you the freedom of changing between let/var & int/double</li>
+	<li>Responsive layout</li>
+	<li>Nice colored output</li>
+</ul>
+
+<h3>Preferences</h3>
+<ul>
+<li><span class="feature">Declare properties as 'let':</span>
+
+If you don't tend to change the value of the properties, it's suggested to declare them as 'let'. Otherwise properties'll be declared as 'var'.</li>
+
+<li><span class="feature">Always declare number-value-properties as Double:</span>
+
+It may happen that a double value does not contain any decimal point, so the parser would declare it as an integer. You can avoid that by cheking this option.</li>
+
+<li><span class="feature">Generate collection initializer:</span>
+
+To generate a class function for the DTO, which can produce a collection from JSON check this option.</li>
+
+<li><span class="feature">Allow recursion (create DTOs for for inner objects):</span>
+
+By cheking this option, you enable to generate classes recursively for non primitive objects contained by the JSON.</li>
+</ul>
+
+<h3>Other features</h3>
+<ul>
+	<li>Generate NSDate optional initializer for a given format</li>
+</ul>
+</div>
+
+<div id="faq">
+
+<h1>Frequently asked questions</h1>
+
+<h3>What are these protocols?</h3>
+
+<pre><code><span class="definition">public protocol</span>  ResponseJSONSerializable {
+    <span class="definition">init</span>?(json: <span class="var">JSON</span>)
+}
+
+<span class="definition">public protocol</span> ResponseJSONCollectionSerializable {
+    <span class="definition">static func</span> collection(json: <span class="var">JSON</span>) -> [<span class="type">Self</span>]
+}</code></pre>
+
+<h3>Ok, but what kind of Request parses like this?</h3>
+
+<pre><code><span class="definition">extension</span> Alamofire.Request {
     
-    <span class="definition">required init</span>?(json: <span class="var">JSON</span>) {
-        <span class="var">type</span> = json[<span class="string">"type"</span>].<span class="var">stringValue</span>
-        <span class="var">contact</span> = json[<span class="string">"contact"</span>].<span class="var">stringValue</span>
-        <span class="var">privacyPolicy</span> = json[<span class="string">"privacyPolicy"</span>].<span class="var">stringValue</span>
-        <span class="var">toc</span> = json[<span class="string">"termsAndConditions"</span>].<span class="var">stringValue</span>
+    <span class="definition">public func</span> responseJson&lt;T: <span class="var">ResponseJSONSerializable</span>&gt;(completionHandler: <span class="var">Response</span>&lt;T, <span class="var">ErrorDTO</span>&gt; -> <span class="type">Void</span>) -> <span class="type">Self</span> {
+        
+        <span class="definition">let</span> responseSerializer = <span class="var">ResponseSerializer</span>&lt;<span class="type">T</span>, <span class="var">ErrorDTO</span>&gt; { request, response, data, error <span class="definition">in</span>
+            <span class="definition">guard</span> error == <span class="definition">nil else</span> { <span class="definition">return</span> .<span class="var">Failure</span>(<span class="var">ErrorDTO</span>(error: error!)) }
+            <span class="definition">guard let</span> validData = data <span class="definition">where</span> validData.<span class="type">length</span> &gt; 0 <span class="definition">else</span> {
+                <span class="definition">let</span> failureReason = <span class="string">"JSON could not be serialized. Input data was nil or zero length."</span>
+                <span class="definition">let</span> error = <span class="var">Error</span>.<span class="var">errorWithCode</span>(.<span class="var">JSONSerializationFailed</span>, failureReason: failureReason)
+                <span class="definition">return</span> .<span class="var">Failure</span>(<span class="var">ErrorDTO</span>(error: error))
+            }
+            
+            <span class="definition">let</span> json = <span class="var">JSON</span>(data: validData)
+            <span class="definition">self</span>.<span class="var">printResponse</span>(request, data: json)
+            <span class="definition">if let</span> jsonError = <span class="var">ErrorDTO</span>(json: json) {
+                <span class="definition">return</span> .<span class="var">Failure</span>(jsonError)
+            } <span class="definition">else if let</span> responseObject = <span class="type">T</span>(json: json) {
+                <span class="definition">return</span> .<span class="var">Success</span>(responseObject)
+            } <span class="definition">else</span> {
+                <span class="definition">let</span> failureReason = <span class="string">"JSON could not be serialized. Input data was nil or zero length."</span>
+                <span class="definition">let</span> error = <span class="var">Error</span>.<span class="var">errorWithCode</span>(.<span class="var">JSONSerializationFailed</span>, failureReason: failureReason)
+                <span class="definition">return</span> .<span class="var">Failure</span>(<span class="var">ErrorDTO</span>(error: error))
+            }
+
+        }
+        <span class="definition">return</span> <span class="var">response</span>(responseSerializer: responseSerializer, completionHandler: completionHandler)
     }
-    <span class="collection hidden">
-    <span class="definition">static func</span> collection(json: <span class="var">JSON</span>) -> [<span class="replace"><#Class#></span>] {
-	    
-	    <span class="definition">var</span> items = [<span class="replace"><#Class#></span>]()
-	    <span class="definition">for</span> (_,subJson):(<span class="type">String</span>, <span class="var">JSON</span>) in json {
-	        <span class="definition">if let</span> item = <span class="replace"><#Class#></span>(json: subJson) {
-	            items.append(item)
-	        }
-	    }
-	    <span class="definition">return</span> items
+    
+    <span class="definition">public func</span> responseJsonCollection&lt;T: <span class="var">ResponseJSONCollectionSerializable</span>&gt;(completionHandler: <span class="var">Response</span>&lt;[<span class="type">T</span>], <span class="var">ErrorDTO</span>&gt; -> <span class="type">Void</span>) -> <span class="type">Self</span> {
+        
+        <span class="definition">let</span> responseSerializer = <span class="var">ResponseSerializer</span>&lt;[<span class="type">T</span>], <span class="var">ErrorDTO</span>&gt; { request, response, data, error <span class="definition">in</span>
+            <span class="definition">guard</span> error == <span class="definition">nil else</span> { <span class="definition">return</span> .<span class="var">Failure</span>(<span class="var">ErrorDTO</span>(error: error!)) }
+            <span class="definition">guard let</span> validData = data <span class="definition">where</span> validData.<span class="type">length</span> &gt; 0 <span class="definition">else</span> {
+                <span class="definition">let</span> failureReason = <span class="string">"JSON could not be serialized. Input data was nil or zero length."</span>
+                <span class="definition">let</span> error = <span class="var">Error</span>.<span class="var">errorWithCode</span>(.<span class="var">JSONSerializationFailed</span>, failureReason: failureReason)
+                <span class="definition">return</span> .<span class="var">Failure</span>(<span class="var">ErrorDTO</span>(error: error))
+            }
+            
+            <span class="definition">let</span> json = <span class="var">JSON</span>(data: validData)
+            <span class="definition">self</span>.<span class="var">printResponse</span>(request, data: json)
+            <span class="definition">if let</span> jsonError = <span class="var">ErrorDTO</span>(json: json) {
+                <span class="definition">return</span> .<span class="var">Failure</span>(jsonError)
+            } <span class="definition">else</span> {
+                <span class="definition">return</span> .<span class="var">Success</span>(T.<span class="var">collection</span>(json))
+            }
+
+        }
+        <span class="definition">return</span> <span class="var">response</span>(responseSerializer: responseSerializer, completionHandler: completionHandler)
     }
-    </span>
-}-->
+}
 </code></pre>
+
+<h3>One more question, wtf is this ErrorDTO???</h3>
+
+<pre><code><span class="definition">public</span> final class ErrorDTO: <span class="var">ResponseJSONSerializable</span>, <span class="type">ErrorType</span> {
+    
+    <span class="definition">let</span> code: <span class="type">String</span>!
+    <span class="definition">var</span> message: <span class="type">String</span>?
+    <span class="definition">var</span> error: <span class="type">NSError</span>?
+    
+    <span class="definition">required public init</span>?(json: <span class="var">JSON</span>) {
+        <span class="var">code</span> = json[<span class="string">"errorCode"</span>].<span class="var">string</span>
+        <span class="var">message</span> = json[<span class="string">"message"</span>].<span class="var">string</span>
+        <span class="definition">if</span> <span class="var">code</span> == <span class="definition">nil</span> {
+            <span class="definition">return nil</span>
+        }
+    }
+    
+    <span class="definition">public init</span>(error: <span class="type">NSError</span>) {
+        <span class="var">error</span> = error
+        <span class="var">code</span> = <span class="string">"</span>\<span class="string">(</span>error.<span class="type">code</span><span class="string">)"</span>
+        <span class="var">message</span> = error.<span class="type">localizedDescription</span>
+    }
+}
+</code></pre>
+
+</div>
+
 </div>
 
 </body>
