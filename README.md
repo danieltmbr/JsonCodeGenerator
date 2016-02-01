@@ -8,6 +8,17 @@ If you do as well, you certainly has taken benefit of SWIFT's generics for type-
 
 This webpage generates SWIFT classes, with a [SwiftyJSON][SwiftyJSON link] initializer, including all the properties contained by the JSON input.
 
+###Features
+
+* JSON verification
+* Recognize Int, Double, String, Bool, Date (by a given format) Array (even empty array), custom object
+* Create classes recursively
+* Define class properties, declare init(json) & collection(json) functions
+* Generate NSDate extension with optional initializer for the given format
+* Give you the freedom of changing between let/var & int/double
+* Responsive layout
+* Nice colored output
+
 ###Preferences
 
 * **Declare properties as 'let':** 
