@@ -41,7 +41,6 @@ function getType(key, value, recursive) {
 			}
 
 		case "string":
-
 			if(!isNaN(Date.parse(value, getDateFormat()))) {
 				return {type: "date", array: false, custom: false};
 			} else {
@@ -176,7 +175,7 @@ function generateDateExtension() {
 function createDateExtensionHtml(dateFormat) {
 
 	var output = "\n<span class=\"definition\">extension</span> <span class=\"type\">NSDate</span> {\n";
-    output += "\t<span class=\"definition\">convenience init</span>?(<span class=\"type\">dateString: String, format: <span class=\"type\">String = <span class=\"string\">\""+dateFormat+"\"</span>) {\n";
+    output += "\t<span class=\"definition\">convenience init</span>?(dateString: <span class=\"type\">String</span>, format: <span class=\"type\">String</span> = <span class=\"string\">\""+dateFormat+"\"</span>) {\n";
     output += "\t\t<span class=\"definition\">let</span> dateStringFormatter = <span class=\"type\">NSDateFormatter</span>()\n";
     output += "\t\tdateStringFormatter.<span class=\"type\">dateFormat</span> = <span class=\"string\">\""+dateFormat+"\"</span>\n";
     output += "\t\tdateStringFormatter.<span class=\"type\">locale</span> = <span class=\"type\">NSLocale</span>(localeIdentifier: <span class=\"string\">\"en_US_POSIX\"</span>)\n";
