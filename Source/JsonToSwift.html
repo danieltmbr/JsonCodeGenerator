@@ -8,20 +8,23 @@
 
 <h1>JSON to Swift converter</h1>
 
-<div class="preferences">
+<div id="preferences">
 <form>	
-	<input type="checkbox" id="cb-let" checked="checked">Declare properties as 'let'<br/>
-	<input type="checkbox" id="cb-double" checked="checked">Always declare number-value-properties as Double<br/>
-	<input type="checkbox" id="cb-collection" checked="checked">Generate collection initializer<br/>
-	<input type="checkbox" id="cb-recursive" checked="checked">Allow recursion (create DTOs for for inner objects)<br/>
+	<div><input type="checkbox" id="cb-let" checked="checked"/>Declare properties as 'let'</div>
+	<div><input type="checkbox" id="cb-double" checked="checked"/>Always declare number-value-properties as Double</div>
+	<div><input type="checkbox" id="cb-collection" checked="checked"/>Generate collection initializer</div>
+	<div><input type="checkbox" id="cb-recursive" checked="checked"/>Allow recursion (create DTOs for for inner objects)</div>
 	<!-- yyyy-MM-dd'T'HH:mm:ss.SSSZ - 2015-07-04T23:10:00.000+02:00 -->
-	<br/>Date format: <input type="text" id="tb-dateformat" value="yyyy-MM-dd'T'HH:mm:ss.SSSZ"/><br/><input id="b-convert" type="button" value="Generate NSDate initializer for this format" onclick="generateDateExtension()" style="width:294px;" />
-	<pre><code id="date-extension"></code></pre>
+	<div class="date">
+	<div>Date format: <input type="text" id="tb-dateformat" value="yyyy-MM-dd'T'HH:mm:ss.SSSZ"/></div>
+	<div><input id="b-convert" type="button" value="Generate NSDate initializer for this format" onclick="generateDateExtension()" style="width:294px;" /></div>
+	<br/><div><pre><code id="date-extension"></code></pre></div>
+	</div>
 <br/>
 </form>
 </div>
 
-<div class="input">
+<div id="input">
 <h3 id="h3-json">JSON:</h3>
 <form>
 	<textarea id="ta-json" placeholder="Insert your JSON here..." autofocus>{
@@ -51,10 +54,9 @@
 </form>
 </div>
 
-<div class="output">
+<div id="output">
 <h3>Swift:</h3>
-<pre>
-<code id="swift"><!--<span class="definition">final class</span> <span class="replace">ClassName</span>: <span class="var">ResponseJSONSerializable, ResponseJSONCollectionSerializable</span> {
+<pre><code id="swift"><!--<span class="definition">final class</span> <span class="replace">ClassName</span>: <span class="var">ResponseJSONSerializable, ResponseJSONCollectionSerializable</span> {
 
     <span class="definition">let</span> type: <span class="type">String</span>
     <span class="definition">let</span> contact: <span class="type">String</span>
@@ -80,8 +82,7 @@
     }
     </span>
 }-->
-</code>
-</pre>
+</code></pre>
 </div>
 
 </body>

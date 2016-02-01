@@ -14,7 +14,6 @@ function parseJson(json, className) {
     	var object = JSON.parse(json);
 	} catch(err) {
 		invalidInput();
-	    // document.getElementById("demo").innerHTML = err.message;
 	}
 	createClass(className, object);
 }

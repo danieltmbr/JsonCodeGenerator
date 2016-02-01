@@ -29,8 +29,12 @@ h3#h3-json.error::before {
 	content: "Invalid ";
 }
 
-input:hover {
-	cursor: pointer;
+#preferences form div input {
+	margin-right: 8px;
+}
+
+input {
+	cursor: pointer !important;
 }
 
 input[type="button"] {
@@ -47,10 +51,9 @@ input[type="button"] {
 
 input[type="text"] {
 	min-width: 200px;
-	border-width: 1px;
-	border-radius: 3px;
-	border-color: #AAA;
 	min-height: 18px;
+	border: solid 1px #AAA;
+	border-radius: 3px;
 }
 
 textarea#ta-json {
@@ -78,6 +81,10 @@ pre {
 code {
 	font-family: "Menlo-Regular";
 	font-size: 11px;
+}
+
+div.date {
+	margin-top: 12px;
 }
 
 span.definition {
@@ -111,4 +118,45 @@ span.replace::after {
 
 .hidden {
 	display: none;
+}
+
+@media only screen and (min-width: 1280px) {
+
+	body {
+		text-align: center;
+	}
+    
+	#input {
+		display: inline-block;
+		vertical-align: top;
+		width: 37%;
+		margin: auto auto;
+		text-align: left;
+	}
+
+	textarea#ta-json {
+		min-height: 400px;
+	}
+
+	#output {
+		display: inline-block;
+		width: auto;
+		min-width: 37%;
+		text-align: left;
+		margin-left: 30px;
+	}
+
+	#preferences form div {
+		display: inline-block;
+		margin: 10px 10px;
+	}
+
+	#preferences form div.date {
+		display: block;
+	}
+
+	#preferences pre {
+		text-align: left;
+	}
+
 }
