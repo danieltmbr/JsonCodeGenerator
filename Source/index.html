@@ -3,6 +3,7 @@
 <head>
 <title>JSON to Swift Converter</title>
 <link rel="stylesheet" type="text/css" href="stylesheet.css">
+<script type="text/javascript" src="moment.min.js"></script>
 <script type="text/javascript" src="converter.js"></script>
 <head>
 <body>
@@ -17,7 +18,7 @@
 		<!-- YYYY-MM-DDTHH:mm:ss.sssZ - 2015-07-04T23:10:00.000+02:00 -->
 		<div class="date">
 		<div>Date format: <input type="text" id="tb-dateformat" value="YYYY-MM-DDTHH:mm:ss.sssZ"/></div>
-		<div><input id="b-convert" type="button" value="Generate NSDate initializer for this format" onclick="generateDateExtension()" style="width:294px;" /></div><br/>
+		<div><input id="b-convert" type="button" value="Generate Date formatter" onclick="generateDateExtension()" style="width:294px;" /></div><br/>
 		<div style="margin: 0;"><pre><code id="date-extension"></code></pre></div>
 		</div>
 	</form>
@@ -28,14 +29,15 @@
 	<form>
 		<textarea id="ta-json" placeholder="Insert your JSON here..." autofocus>{
 	"id":0,
-	"fullName":"String",
-	"created":"2015-07-04T23:10:00.000+02:00",
+	"full-name":"String",
+	"created_at":"2015-07-04T23:10:00.000+02:00",
 	"approved": false,
-	"zipCode":"2000",
+	"zip_code":"2000",
 	"description":"String",
 	"email":"String",
-	"followerCount": 1212,
-	"currentUserFollows":true,
+	"follower_count": 1212,
+	"avatar-url": "https://www.biography.com/.image/t_share/MTQ3NjM5MjU4NjcxMjI4Mjky/kanye_west_photo_by_frank_micelotta_getty_images_entertainment_getty_51329049.jpg",
+	"current_user_follows":true,
 	"location": {
 		"latitude":  47.16884,
 		"longitude": 19.134245,

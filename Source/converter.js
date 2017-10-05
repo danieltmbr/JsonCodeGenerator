@@ -11,7 +11,7 @@ function convert() {
 	const root = parseJson(getJson(), "Root")
 	structs = getStructsList(root)
 	console.log(structs)
-	// displayCode(htmlOutput(structs))
+	displayCode(htmlOutput(structs))
 }
 
 // parseJson(json, name)
@@ -39,6 +39,10 @@ function parseObject(object, name) {
 	        return parseProperty(key, object[key])
 				})
 		: null
+
+	// var properties = null
+	//
+	// if typeof(object) == "object"
 
 	return {name: name, properties: properties}
 }
@@ -99,8 +103,10 @@ function getTypeName(key, value) {
 		case "number":
 			return (intEnabled() && value % 1 === 0) ? "Int" : "Double"
 		case "string":
-			if(!isNaN(Date.parse(value, getDateFormat()))) {
+			if(moment(value, getDateFormat(), true).isValid()) {
 				return "Date"
+			} else if (isURL(value)) {
+				return "URL"
 			} else {
 				return "String"
 			}
@@ -137,13 +143,18 @@ function flattenStructs(root) {
 function flattenStruct(struct, accumulator) {
 
 	const props = struct.properties.map(flattenedProperty)
-	accumulator.push({name: struct.name, properties: props})
+	var needsDecoder = false
 
 	for (prop of struct.properties) {
+		if (!needsDecoder && prop.key != prop.name) {
+				needsDecoder = true
+		}
 		if (null != prop.type.properties) {
 			flattenStruct(prop.type, accumulator)
 		}
 	}
+
+	accumulator.push({name: struct.name, properties: props, needsDecoder: needsDecoder})
 	return accumulator
 }
 
@@ -161,10 +172,10 @@ function removeDuplicates(structs) {
 // Remove duplicant object form array
 // which has the same key
 function uniqBy(array, key) {
-    var seen = {};
+    var seen = {}
     return array.filter(function(item) {
-        var k = key(item);
-        return seen.hasOwnProperty(k) ? false : (seen[k] = true);
+        var k = key(item)
+        return seen.hasOwnProperty(k) ? false : (seen[k] = true)
     })
 }
 
@@ -180,71 +191,48 @@ function keyOf(struct) {
 
 //
 function htmlOutput(structs) {
-	return Object.keys(structs).reduce( function(previousValue, currentValue, currentIndex, array) {
-  		return previousValue + objectHtmlOutput(currentValue, structs[currentValue]) + "\n\n"
-	}, "")
+	return structs.reduce(structsReduce, "")
 }
 
-function objectHtmlOutput(name, properties) {
-
-	var htmlDeclareProperties = ""
-	var htmlInitProperties = ""
-
-	properties.forEach(function(element, index, array) {
-		htmlDeclareProperties += "\t"+propertyToHtml(element, letEnabled())
-		htmlInitProperties += "\t\t"+propertyParseToHtml(element)
-	})
-
-	var classOutput = "<span class=\"definition\">final class</span> <span class=\"replace\">"+name+"</span>: <span class=\"var\">ResponseJSONSerializable"
-
-
-	classOutput += "</span> {\n\n"
-	classOutput += htmlDeclareProperties
-	classOutput += "\n\t<span class=\"definition\">required init</span>?(json: <span class=\"var\">JSON</span>) {\n"
-	classOutput += htmlInitProperties
-	classOutput += "\t}\n"
-
-	classOutput += "}"
-
-	return classOutput
+function structsReduce(accumulator, struct) {
+		console.log(accumulator + structHtml(struct) + "\n\n")
+		return accumulator + structHtml(struct) + "\n\n"
 }
 
-function propertyToHtml(property, enabledLet) {
-	const def = enabledLet ? "let" : "var"
-	var output = "<span class=\"definition\">"+def+"</span> "+property.name+": <span class=\"type\">"+getSwiftType(property)+"</span>"
-	if((property.custom && !property.array) || (property.array && !property.custom)) {
-		output += "?"
+function structHtml(struct) {
+
+	// Declare struct
+	var structHtml = "<span class=\"definition\">struct</span> <span class=\"type\">"+struct.name+": Codable</span> {\n\n"
+	// List properties
+	structHtml += struct.properties.reduce(propertyDeclarationHtml, "") + "\n"
+
+	// Declare coding keys
+	if (struct.needsDecoder) {
+		structHtml += "\t<span class=\"definition\">private enum</span> <span class=\"type\">CodingKeys: String, CodingKey</span> {\n"
+		structHtml += struct.properties.reduce(propertyCodingKeyHtml, "")
+		structHtml += "\t}\n"
 	}
-	return output + "\n"
+
+	return structHtml + "}"
 }
 
-function propertyParseToHtml(property) {
-	if(property.type == "date") {
-		return "<span class=\"var\">"+property.name+"</span> = <span class=\"type\">NSDate</span>(dateString: json[<span class=\"string\">\""+property.name+"\"</span>].<span class=\"var\">stringValue</span>)\n"
-	} else if(property.array) {
-
-		if(property.custom) {
-			return "<span class=\"var\">"+property.name+"</span> = <span class=\"replace\">"+property.type+"</span>.<span class=\"var\">collection</span>(json[<span class=\"string\">\""+property.name+"\"</span>])\n"
-		} else {
-			return "<span class=\"var\">"+property.name+"</span> = json[<span class=\"string\">\""+property.name+"\"</span>].<span class=\"var\">arrayObject</span> <span class=\"definition\">as</span>? <span class=\"type\">"+getSwiftType(property)+"</span>\n"
-		}
-
-	} else if(property.custom) {
-		return "<span class=\"var\">"+property.name+"</span> = <span class=\"replace\">"+property.type+"</span>(json: json[<span class=\"string\">\""+property.name+"\"</span>])\n"
-	} else {
-		return "<span class=\"var\">"+property.name+"</span> = json[<span class=\"string\">\""+property.name+"\"</span>].<span class=\"var\">"+property.type+"Value</span>\n"
-	}
+function propertyDeclarationHtml(accumulator, property) {
+	return accumulator + "\t<span class=\"definition\">"+propertyDefinition()+"</span> "+property.name+": <span class=\"type\">"+propertyType(property)+"</span>\n"
 }
 
-function getSwiftType(property) {
-		var output = capitalise(property.type)
-		if(property.custom) {
-			output = "<span class=\"replace\">"+output+"</span>"
-		}
-		if(property.array) {
-			output = "["+output+"]"
-		}
-		return output
+function propertyCodingKeyHtml(accumulator, property) {
+	var key = "\t\t<span class=\"definition\">case</span> "+property.name
+	key += (property.key != property.name) ? " = <span class=\"string\">\""+property.key+"\"</span>\n" : "\n"
+	return accumulator + key
+}
+
+function propertyDefinition() {
+	return letEnabled() ? "let" : "var"
+}
+
+function propertyType(property) {
+	const todo = property.type == "Any" ? "</span> <span class=\"comment\">// TODO: Please provide a codable type, because Any isn't one." : ""
+		return (property.isArray ? "["+property.type+"]" : property.type) + todo
 }
 
 /**
@@ -327,4 +315,44 @@ function removeError() {
 
 function clearData() {
 	structs = {}
+}
+
+function isURL(str) {
+  var pattern = new RegExp(
+  	"^" +
+    // protocol identifier
+    "(?:(?:https?|ftp)://)" +
+    // user:pass authentication
+    "(?:\\S+(?::\\S*)?@)?" +
+    "(?:" +
+      // IP address exclusion
+      // private & local networks
+      "(?!(?:10|127)(?:\\.\\d{1,3}){3})" +
+      "(?!(?:169\\.254|192\\.168)(?:\\.\\d{1,3}){2})" +
+      "(?!172\\.(?:1[6-9]|2\\d|3[0-1])(?:\\.\\d{1,3}){2})" +
+      // IP address dotted notation octets
+      // excludes loopback network 0.0.0.0
+      // excludes reserved space >= 224.0.0.0
+      // excludes network & broacast addresses
+      // (first & last IP address of each class)
+      "(?:[1-9]\\d?|1\\d\\d|2[01]\\d|22[0-3])" +
+      "(?:\\.(?:1?\\d{1,2}|2[0-4]\\d|25[0-5])){2}" +
+      "(?:\\.(?:[1-9]\\d?|1\\d\\d|2[0-4]\\d|25[0-4]))" +
+    "|" +
+      // host name
+      "(?:(?:[a-z\\u00a1-\\uffff0-9]-*)*[a-z\\u00a1-\\uffff0-9]+)" +
+      // domain name
+      "(?:\\.(?:[a-z\\u00a1-\\uffff0-9]-*)*[a-z\\u00a1-\\uffff0-9]+)*" +
+      // TLD identifier
+      "(?:\\.(?:[a-z\\u00a1-\\uffff]{2,}))" +
+      // TLD may end with dot
+      "\\.?" +
+    ")" +
+    // port number
+    "(?::\\d{2,5})?" +
+    // resource path
+    "(?:[/?#]\\S*)?" +
+  "$", "i"
+	) // fragment locator
+  return pattern.test(str)
 }
