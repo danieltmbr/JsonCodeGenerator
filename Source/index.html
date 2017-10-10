@@ -1,0 +1,75 @@
+<!doctype html>
+<html>
+<head>
+<title>JSON to Swift Converter</title>
+<link rel="stylesheet" type="text/css" href="stylesheet.css">
+<script type="text/javascript" src="moment.min.js"></script>
+<script type="text/javascript" src="swift-generator.js"></script>
+<script type="text/javascript" src="parser.js"></script>
+<head>
+<body>
+<div id="content">
+
+<h1>JSON to Swift Codable</h1>
+
+<div id="preferences">
+	<form>
+		<div><input type="checkbox" id="cb-let" checked="checked"/>Declare properties as <strong>let</strong></div>
+		<div><input type="checkbox" id="cb-double"/>Numbers as <strong>Double</strong></div>
+		<!-- YYYY-MM-DDTHH:mm:ss.sssZ - 2015-07-04T23:10:00.000+02:00 -->
+		<div class="date">
+		<div>Date format: <input type="text" id="tb-dateformat" value="YYYY-MM-DDTHH:mm:ss.sssZ"/></div>
+		<div><input id="b-convert" type="button" value="Generate Date formatter" onclick="generateDateExtension()" style="width:294px;" /></div><br/>
+		<div style="margin: 0;"><pre><code id="date-extension"></code></pre></div>
+		</div>
+	</form>
+</div>
+
+<div id="input">
+	<h3 id="h3-json">JSON:</h3>
+	<form>
+		<textarea id="ta-json" placeholder="Insert your JSON here..." autofocus>{
+	"id":0,
+	"full-name":"String",
+	"created_at":"2015-07-04T23:10:00.000+02:00",
+	"approved": false,
+	"zip_code":"2000",
+	"description":"String",
+	"email":"String",
+	"follower_count": 1212,
+	"avatar-url": "https://www.biography.com/.image/t_share/MTQ3NjM5MjU4NjcxMjI4Mjky/kanye_west_photo_by_frank_micelotta_getty_images_entertainment_getty_51329049.jpg",
+	"current_user_follows":true,
+	"location": {
+		"latitude":  47.16884,
+		"longitude": 19.134245,
+		"address":"String",
+		"addressAdditional":"String"
+	},
+  "location2": {
+		"latitude":  47.16884,
+		"longitude": 19.134245,
+		"address":"String",
+		"addressAdditional":"String"
+	},
+	"objectArray": [{
+		"propr1":  47.16884,
+		"prop2":"String"
+	}],
+	"emptyArray": [],
+	"intArray": [1, 2, 3]
+}</textarea>
+		<input id="b-convert" type="button" value="Convert" onclick="convert()" />
+	</form>
+</div>
+
+<div id="output">
+	<h3>Swift:</h3>
+	<pre><code id="swift"></code></pre>
+</div>
+
+<footer>2017 - Created by <a href="mailto:daniel@tmbr.me">danieltmbr</a>;</footer>
+
+</div>
+
+</body>
+</html>

@@ -142,6 +142,10 @@ span.string {
 	color: rgb(229, 0, 0);
 }
 
+span.comment {
+	color: rgb(0, 116, 0);
+}
+
 span.replace {
 	border-radius: 6px;
 	background-color: rgb(222, 237, 253);
@@ -173,31 +177,12 @@ span.feature {
 	margin-bottom: 30px !important;
 }
 
-#info {
-	position: absolute;
-	top: 0;
-	text-align: left;
-}
-
-#info h5 {
-	text-decoration: none;
-}
-
-#readme h3 {
-	border-bottom: 1px solid rgba(0, 0, 0, 0.3);
-}
-
-#faq {
-	margin-bottom: 32px;
-	padding-bottom: 20px;
-}
-
 @media only screen and (min-width: 1280px) {
 
 	body {
 		text-align: center;
 	}
-    
+
 	#input {
 		display: inline-block;
 		vertical-align: top;
@@ -238,32 +223,6 @@ span.feature {
 
 	#preferences pre {
 		text-align: left;
-	}
-
-	#readme, #faq {
-
-		display: inline-block;
-		vertical-align: top;
-
-		width: calc(50% - 24px);
-		/* Firefox */
-		width: -moz-calc(50% - 24px);
-		/* WebKit */
-		width: -webkit-calc(50% - 24px);
-		/* Opera */
-		width: -o-calc(50% - 24px);
-		/* Standard */
-		width: calc(50% - 24px);	
-
-		margin: auto;
-
-		min-height: 100%;
-	}
-
-	#faq {
-		padding-left: 11px;
-		margin-left: 12px;
-		border-left: 1px solid #AAA;
 	}
 
 }
