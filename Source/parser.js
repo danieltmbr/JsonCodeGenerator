@@ -10,7 +10,6 @@ function convert() {
 	clearData()
 	const root = parseJson(getJson(), "Root")
 	structs = getStructsList(root)
-	console.log(structs)
 	displayCode(htmlOutput(structs))
 }
 
@@ -40,10 +39,6 @@ function parseObject(object, name) {
 				})
 		: null
 
-	// var properties = null
-	//
-	// if typeof(object) == "object"
-
 	return {name: name, properties: properties}
 }
 
@@ -60,7 +55,7 @@ function parseProperty(key, value) {
 	const definition = getPropertyDefinition(key, value)
 	return {
 		key: key,
-		name: swiftify(key),
+		name: key,
 		isArray: definition.isArray,
 		type: definition.type
 	}
@@ -99,26 +94,26 @@ function getTypeName(key, value) {
 
 	switch(typeof(value)) {
 		case "boolean":
-			return "Bool"
+			return "boolean"
 		case "number":
-			return (intEnabled() && value % 1 === 0) ? "Int" : "Double"
+			return (intEnabled() && value % 1 === 0) ? "integer" : "double"
 		case "string":
 			if(moment(value, getDateFormat(), true).isValid()) {
-				return "Date"
+				return "date"
 			} else if (isURL(value)) {
-				return "URL"
+				return "url"
 			} else {
-				return "String"
+				return "string"
 			}
 		case "object":
 			if(Array.isArray(value)) {
 				if(value.length == 0) {
-					return "Any"
+					return "any"
 				} else {
 					return getTypeName(key, value[0])
 				}
 			} else {
-					return capitalise(swiftify(key)+"Dto")
+					return key; // capitalise(swiftify(key)+"Dto")
 			}
 		default: return "undefined"
 	}
@@ -143,18 +138,14 @@ function flattenStructs(root) {
 function flattenStruct(struct, accumulator) {
 
 	const props = struct.properties.map(flattenedProperty)
-	var needsDecoder = false
+	accumulator.push({name: struct.name, properties: props})
 
 	for (prop of struct.properties) {
-		if (!needsDecoder && prop.key != prop.name) {
-				needsDecoder = true
-		}
 		if (null != prop.type.properties) {
 			flattenStruct(prop.type, accumulator)
 		}
 	}
 
-	accumulator.push({name: struct.name, properties: props, needsDecoder: needsDecoder})
 	return accumulator
 }
 
@@ -173,10 +164,36 @@ function removeDuplicates(structs) {
 // which has the same key
 function uniqBy(array, key) {
     var seen = {}
-    return array.filter(function(item) {
-        var k = key(item)
-        return seen.hasOwnProperty(k) ? false : (seen[k] = true)
+		var changes = {}
+    const filtered = array.filter(function(item) {
+				const k = key(item)
+        var duplicate = false
+				// const duplicate = seen.hasOwnProperty(k) ? false : (seen[k] = item.name)
+
+				if (seen.hasOwnProperty(k)) {
+					duplicate = true
+					changes[item.name] = seen[k]
+				} else {
+					seen[k] = item.name
+				}
+				return !duplicate
     })
+		return correctTypedStructs(filtered, changes)
+}
+
+function correctTypedStructs(structs, typeChanges) {
+	var corrected = []
+	for (struct of structs) {
+		var s = struct
+		for (key in s.properties) {
+			const property = s.properties[key]
+			if (typeChanges.hasOwnProperty(property.type)) {
+				property.type = typeChanges[property.type]
+			}
+		}
+		corrected.push(s)
+	}
+	return corrected
 }
 
 // Creates key from a struct
@@ -186,94 +203,8 @@ function keyOf(struct) {
 }
 
 /**
---------------------------------- Html output ----------------------------------
-*/
-
-//
-function htmlOutput(structs) {
-	return structs.reduce(structsReduce, "")
-}
-
-function structsReduce(accumulator, struct) {
-		console.log(accumulator + structHtml(struct) + "\n\n")
-		return accumulator + structHtml(struct) + "\n\n"
-}
-
-function structHtml(struct) {
-
-	// Declare struct
-	var structHtml = "<span class=\"definition\">struct</span> <span class=\"type\">"+struct.name+": Codable</span> {\n\n"
-	// List properties
-	structHtml += struct.properties.reduce(propertyDeclarationHtml, "") + "\n"
-
-	// Declare coding keys
-	if (struct.needsDecoder) {
-		structHtml += "\t<span class=\"definition\">private enum</span> <span class=\"type\">CodingKeys: String, CodingKey</span> {\n"
-		structHtml += struct.properties.reduce(propertyCodingKeyHtml, "")
-		structHtml += "\t}\n"
-	}
-
-	return structHtml + "}"
-}
-
-function propertyDeclarationHtml(accumulator, property) {
-	return accumulator + "\t<span class=\"definition\">"+propertyDefinition()+"</span> "+property.name+": <span class=\"type\">"+propertyType(property)+"</span>\n"
-}
-
-function propertyCodingKeyHtml(accumulator, property) {
-	var key = "\t\t<span class=\"definition\">case</span> "+property.name
-	key += (property.key != property.name) ? " = <span class=\"string\">\""+property.key+"\"</span>\n" : "\n"
-	return accumulator + key
-}
-
-function propertyDefinition() {
-	return letEnabled() ? "let" : "var"
-}
-
-function propertyType(property) {
-	const todo = property.type == "Any" ? "</span> <span class=\"comment\">// TODO: Please provide a codable type, because Any isn't one." : ""
-		return (property.isArray ? "["+property.type+"]" : property.type) + todo
-}
-
-/**
--------------------------------- Date extension --------------------------------
-*/
-
-/* NSDate Extension functions */
-
-function generateDateExtension() {
-	displayDateExtension(createDateExtensionHtml(getDateFormat()))
-}
-
-function createDateExtensionHtml(dateFormat) {
-
-	var output = "\n<span class=\"definition\">extension</span> <span class=\"type\">Date</span> {\n"
-    output += "\t<span class=\"definition\">convenience init</span>?(dateString: <span class=\"type\">String</span>, format: <span class=\"type\">String</span> = <span class=\"string\">\""+dateFormat+"\"</span>) {\n"
-    output += "\t\t<span class=\"definition\">let</span> dateStringFormatter = <span class=\"type\">NSDateFormatter</span>()\n"
-    output += "\t\tdateStringFormatter.<span class=\"type\">dateFormat</span> = <span class=\"string\">\""+dateFormat+"\"</span>\n"
-    output += "\t\tdateStringFormatter.<span class=\"type\">locale</span> = <span class=\"type\">NSLocale</span>(localeIdentifier: <span class=\"string\">\"en_US_POSIX\"</span>)\n"
-    output += "\t\t<span class=\"definition\">guard let</span> date = dateStringFormatter.<span class=\"type\">dateFromString(dateString)</span> <span class=\"definition\">else</span> { <span class=\"definition\">return nil</span> }\n"
-    output += "\t\t<span class=\"definition\">self.init</span>(timeInterval:0, sinceDate:date)\n"
-    output += "\t}\n"
-	output += "}"
-	return output
-}
-
-/**
 ------------------------------- Helper functions -------------------------------
 */
-
-function swiftify(key) {
-	const words = key
-		.replace(/[-_]/g, ' ')
-		.split(' ')
-
-	var name = ""
-	for (var i = 0; i < words.length; i++) {
-		name += i == 0 ? words[i] : capitalise(words[i])
-	}
-	return name
-}
 
 function getJson() {
 	return document.getElementById("ta-json").value
