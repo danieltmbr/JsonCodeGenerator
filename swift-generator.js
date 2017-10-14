@@ -27,7 +27,7 @@ PlainProperty.prototype.swiftifiedType = function (prefix, postfix) {
 		case "undefined":
 			return "Any"
 		default:
-			return capitalise(prefix + swiftify(this.type) + postfix)
+			return prefix + capitalise(swiftify(this.type)) + postfix
 	}
 }
 
@@ -45,7 +45,7 @@ PlainProperty.prototype.swiftified = function(prefix, postfix) {
 */
 
 Struct.prototype.swiftifiedName = function(prefix, postfix) {
-	return capitalise(prefix + swiftify(this.name) + postfix)
+	return prefix + capitalise(swiftify(this.name)) + postfix
 }
 
 Struct.prototype.propertiesNeedsDecoder =	function(properties) {

@@ -39,15 +39,16 @@ function getJsonString() {
 }
 
 function getRootName() {
-	return "Root"
+	const root = document.getElementById("tb-root-name").value
+	return root.length > 0 ? root : "Root"
 }
 
 function getPrefix() {
-	return ""
+	return document.getElementById("tb-type-prefix").value
 }
 
 function getPostfix() {
-	return "Dto"
+	return document.getElementById("tb-type-postfix").value
 }
 
 function getIntEnabled() {

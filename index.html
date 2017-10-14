@@ -17,11 +17,16 @@
 	<form>
 		<div><input type="checkbox" id="cb-let" checked="checked"/>Declare properties as <strong>let</strong></div>
 		<div><input type="checkbox" id="cb-double"/>Numbers as <strong>Double</strong></div>
+		<div class="naming">
+			<div>Name of the root object: <input type="text" id="tb-root-name" value="Root" placeholder="Root name"/></div>
+			<div>Type name prefix: <input type="text" id="tb-type-prefix" value="" placeholder="prefix"/></div>
+			<div>Type name postfix: <input type="text" id="tb-type-postfix" value="Dto" placeholder="postfix" /></div>
+		</div>
 		<!-- YYYY-MM-DDTHH:mm:ss.sssZ - 2015-07-04T23:10:00.000+02:00 -->
 		<div class="date">
-		<div>Date format: <input type="text" id="tb-dateformat" value="YYYY-MM-DDTHH:mm:ss.sssZ"/></div>
-		<div><input id="b-convert" type="button" value="Generate Date formatter" onclick="generateDateExtension()" style="width:294px;" /></div><br/>
-		<div style="margin: 0;"><pre><code id="date-extension"></code></pre></div>
+			<div>Date format: <input type="text" id="tb-dateformat" value="YYYY-MM-DDTHH:mm:ss.sssZ"/></div>
+			<div><input id="b-convert" type="button" value="Generate Date formatter" onclick="generateDateExtension()" style="width:294px;" /></div><br/>
+			<div style="margin: 0;"><pre><code id="date-extension"></code></pre></div>
 		</div>
 	</form>
 </div>
