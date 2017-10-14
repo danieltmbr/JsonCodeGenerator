@@ -1,289 +1,223 @@
-// In-memory database :D
-var structs = []
-
 /**
---------------------------------- Parsing Json ---------------------------------
+------------------------------ PropertyDefinition ------------------------------
 */
 
-function convert() {
-	removeError()
-	clearData()
-	const root = parseJson(getJson(), "Root")
-	structs = getStructsList(root)
-	displayCode(htmlOutput(structs))
+function PropertyDefinition(isArray, type) {
+	// Properties
+	this.isArray 	= isArray 	// Bool
+	this.type 		= type			// Struct
 }
 
-// parseJson(json, name)
-// params: json - string to parse in JSON format
-//				 name - name of the root object of the JSON
-// returns: object - {name, properties}
-function parseJson(json, name) {
-	try {
-    	const object = JSON.parse(json)
-			return parseObject(object, name)
-	} catch(err) {
-		console.log(err)
-		invalidInput()
+/**
+----------------------------------- Property -----------------------------------
+*/
+
+function Property(key, name, isArray, type) {
+
+	// Properties
+	this.key 			= key 		// String
+	this.name 		= name		// String
+	this.isArray 	= isArray	// Bool
+	this.type 		= type		// Struct
+
+	// Methods
+
+	// Simplifies a property object
+	// returns: PlainProperty
+	this.flattened = function() {
+		return new PlainProperty(this.key, this.name, this.isArray, this.type.name)
 	}
 }
 
-// parseObject(object, name)
-// params: object - js object parsed from JSON
-//				 name - name of the root object
-// returns: object - {name, [properties]}
-function parseObject(object, name) {
+/**
+-------------------------------- PlainProperty ---------------------------------
+*/
 
-	const properties = typeof(object) == "object"
-		? Object.keys(object).map( function(key) {
-	        return parseProperty(key, object[key])
-				})
-		: null
-
-	return {name: name, properties: properties}
+function PlainProperty(key, name, isArray, type) {
+	// Properties
+	this.key 			= key 		// String
+	this.name 		= name	  // String
+	this.isArray 	= isArray	// Bool
+	this.type 		= type		// String
 }
 
-// parseProperty(key, value)
-// params: key - key that stored the value in the parent object
-//				 value - value for the key from parent object
-// returns: object - {
-// 		key: String (from json),
-// 		name: String (swift syntax name),
-// 		isArray: Bool
-// 		type: object {name, properties}
-// }
-function parseProperty(key, value) {
-	const definition = getPropertyDefinition(key, value)
-	return {
-		key: key,
-		name: key,
-		isArray: definition.isArray,
-		type: definition.type
+/**
+----------------------------------- Struct -------------------------------------
+*/
+
+function Struct(name, properties) {
+
+	// Properties
+	this.name 			= name				// String
+	this.properties = properties // (Plain)Property array - can be null
+
+	// Methods
+
+	// Creates a list (with no duplicants) from a Struct Tree
+	this.list = function() {
+		return this.flattened([])
 	}
-}
 
-// returns: object - {
-// 		isArray: Bool,
-// 		type: {name, [properties]}
-// }
-function getPropertyDefinition(key, value) {
-	const isArray = Array.isArray(value)
-	const type = getTypeDefinition(key, value)
-	return {isArray: isArray, type: type}
-}
+	// Creates array from struct tree
+	// and add it to the accumulator array
+	this.flattened = function(accumulator) {
 
-// returns: object - {name, [properties]}
-function getTypeDefinition(key, value) {
+		const props = this.properties.map(property => property.flattened())
+		accumulator.push(new Struct(this.name, props))
 
-	const name = getTypeName(key, value)
-	if (typeof(value) == "object") {
-		// Object
-		if (!Array.isArray(value)) {
-			return parseObject(value, name)
-		}
-		// Not ampty array
-		else if (value.length != 0) {
-			return parseObject(value[0], name)
-		}
-	}
-	// Else Primitive value (e.g. int, bool, string, etc)
-	return {name: name, properties: null}
-}
-
-// returns: string (Name of a swift type)
-function getTypeName(key, value) {
-
-	switch(typeof(value)) {
-		case "boolean":
-			return "boolean"
-		case "number":
-			return (intEnabled() && value % 1 === 0) ? "integer" : "double"
-		case "string":
-			if(moment(value, getDateFormat(), true).isValid()) {
-				return "date"
-			} else if (isURL(value)) {
-				return "url"
-			} else {
-				return "string"
+		for (prop of this.properties) {
+			if (null != prop.type.properties) {
+				prop.type.flattened(accumulator)
 			}
-		case "object":
-			if(Array.isArray(value)) {
-				if(value.length == 0) {
-					return "any"
+		}
+		return accumulator
+	}
+}
+
+/**
+-------------------------------- ParserConfig ----------------------------------
+*/
+
+function ParserConfig(rootName, intEnabled, dateFormat) {
+	this.rootName 	= rootName 	// Function, returns: String
+	this.intEnabled = intEnabled	// Function, returns: Bool
+	this.dateFormat = dateFormat	// Function, returns: String
+}
+
+/**
+----------------------------------- Parser -------------------------------------
+*/
+
+function Parser(config) {
+
+	this.config 	= config	// Configuration of the parser
+	this.structs 	= [] 		// In-memory database :D
+
+	// parse(object)
+	// returns a duplicated free flattened Struct array
+	this.parse = function(object) {
+		const root = this.parseObject(object, config.rootName())
+		return this.removeDuplicates(root.list())
+	}
+
+	// parseObject(object, name)
+	// params: object - js object parsed from JSON
+	//				 name - name of the root object
+	// returns: Struct
+	this.parseObject = function(object, name) {
+		const properties = typeof(object) == "object"
+			? Object.keys(object).map(key => this.parseProperty(key, object[key]))
+			: null
+		return new Struct(name, properties)
+	}
+
+	// parseProperty(key, value)
+	// params: key - key that stored the value in the parent object
+	//				 value - value for the key from parent object
+	// returns: Property
+	this.parseProperty = function(key, value) {
+		const definition = this.getPropertyDefinition(key, value)
+		return new Property(key, key, definition.isArray, definition.type)
+	}
+
+	// returns: PropertyDefinition
+	this.getPropertyDefinition = function(key, value) {
+		const isArray = Array.isArray(value)
+		const type = this.getTypeDefinition(key, value)
+		return new PropertyDefinition(isArray, type)
+	}
+
+	// returns: Struct
+	this.getTypeDefinition = function(key, value) {
+
+		const name = this.getTypeName(key, value)
+		if (typeof(value) == "object") {
+			// Object
+			if (!Array.isArray(value)) {
+				return this.parseObject(value, name)
+			}
+			// Not ampty array
+			else if (value.length != 0) {
+				return this.parseObject(value[0], name)
+			}
+		}
+		// Else Primitive value (e.g. int, bool, string, etc)
+		return new Struct(name, null)
+	}
+
+	// returns: string (Name of a type)
+	this.getTypeName = function(key, value) {
+
+		switch(typeof(value)) {
+			case "boolean":
+				return "boolean"
+			case "number":
+				return (this.config.intEnabled() && value % 1 === 0) ? "integer" : "double"
+			case "string":
+				if(moment(value, this.config.dateFormat(), true).isValid()) {
+					return "date"
+				} else if (isURL(value)) {
+					return "url"
 				} else {
-					return getTypeName(key, value[0])
+					return "string"
 				}
-			} else {
-					return key; // capitalise(swiftify(key)+"Dto")
-			}
-		default: return "undefined"
-	}
-}
-
-/**
---------------------------------- Parsing Json ---------------------------------
-*/
-
-// Creates a list (with no duplicants) from a Struct Tree
-function getStructsList(root) {
-	return removeDuplicates(flattenStructs(root))
-}
-
-// Creates array from struct tree
-function flattenStructs(root) {
-	return flattenStruct(root, [])
-}
-
-// Creates array from struct tree
-// and add it to the accumulator array
-function flattenStruct(struct, accumulator) {
-
-	const props = struct.properties.map(flattenedProperty)
-	accumulator.push({name: struct.name, properties: props})
-
-	for (prop of struct.properties) {
-		if (null != prop.type.properties) {
-			flattenStruct(prop.type, accumulator)
-		}
-	}
-
-	return accumulator
-}
-
-// Simplifies a property object
-function flattenedProperty(prop) {
-	return {key: prop.key, name: prop.name, isArray: prop.isArray, type: prop.type.name}
-}
-
-// Remove duplicant structs from a list
-// Same structs: which has the same property list
-function removeDuplicates(structs) {
-	return uniqBy(structs, keyOf)
-}
-
-// Remove duplicant object form array
-// which has the same key
-function uniqBy(array, key) {
-    var seen = {}
-		var changes = {}
-    const filtered = array.filter(function(item) {
-				const k = key(item)
-        var duplicate = false
-				// const duplicate = seen.hasOwnProperty(k) ? false : (seen[k] = item.name)
-
-				if (seen.hasOwnProperty(k)) {
-					duplicate = true
-					changes[item.name] = seen[k]
+			case "object":
+				if(Array.isArray(value)) {
+					if(value.length == 0) {
+						return "any"
+					} else {
+						return this.getTypeName(key, value[0])
+					}
 				} else {
-					seen[k] = item.name
+						return key;
 				}
-				return !duplicate
-    })
-		return correctTypedStructs(filtered, changes)
-}
-
-function correctTypedStructs(structs, typeChanges) {
-	var corrected = []
-	for (struct of structs) {
-		var s = struct
-		for (key in s.properties) {
-			const property = s.properties[key]
-			if (typeChanges.hasOwnProperty(property.type)) {
-				property.type = typeChanges[property.type]
-			}
+			default: return "undefined"
 		}
-		corrected.push(s)
 	}
-	return corrected
-}
 
-// Creates key from a struct
-// using its properties array
-function keyOf(struct) {
-	return JSON.stringify(struct.properties)
-}
+	// Remove duplicant structs from a list
+	// Same structs: which has the same property list
+	this.removeDuplicates = function(structs) {
+		return this.uniqBy(structs, this.keyOf)
+	}
 
-/**
-------------------------------- Helper functions -------------------------------
-*/
+	// Remove duplicant object form array
+	// which has the same key
+	this.uniqBy = function(array, key) {
+	    var seen = {}
+			var changes = {}
+	    const filtered = array.filter(function(item) {
+					const k = key(item)
+	        var duplicate = false
+					if (seen.hasOwnProperty(k)) {
+						duplicate = true
+						changes[item.name] = seen[k]
+					} else {
+						seen[k] = item.name
+					}
+					return !duplicate
+	    })
+			return this.correctTypedStructs(filtered, changes)
+	}
 
-function getJson() {
-	return document.getElementById("ta-json").value
-}
+	this.correctTypedStructs = function(structs, typeChanges) {
+		var corrected = []
+		for (struct of structs) {
+			var s = struct
+			for (key in s.properties) {
+				const property = s.properties[key]
+				if (typeChanges.hasOwnProperty(property.type)) {
+					property.type = typeChanges[property.type]
+				}
+			}
+			corrected.push(s)
+		}
+		return corrected
+	}
 
-function letEnabled() {
-	return document.getElementById("cb-let").checked
-}
-
-function intEnabled() {
-	return !document.getElementById("cb-double").checked
-}
-
-function getDateFormat() {
-	return document.getElementById("tb-dateformat").value
-}
-
-function capitalise(string) {
-    return string.charAt(0).toUpperCase() + string.slice(1) //.toLowerCase()
-}
-
-function displayCode(swiftCode) {
-	document.getElementById("swift").innerHTML = swiftCode
-}
-
-function displayDateExtension(dateHtml) {
-	document.getElementById("date-extension").innerHTML = dateHtml
-}
-
-function invalidInput() {
-	document.getElementById("h3-json").className = "error"
-	document.getElementById("ta-json").className = "error"
-}
-
-function removeError() {
-	document.getElementById("h3-json").className = ""
-	document.getElementById("ta-json").className = ""
-}
-
-function clearData() {
-	structs = {}
-}
-
-function isURL(str) {
-  var pattern = new RegExp(
-  	"^" +
-    // protocol identifier
-    "(?:(?:https?|ftp)://)" +
-    // user:pass authentication
-    "(?:\\S+(?::\\S*)?@)?" +
-    "(?:" +
-      // IP address exclusion
-      // private & local networks
-      "(?!(?:10|127)(?:\\.\\d{1,3}){3})" +
-      "(?!(?:169\\.254|192\\.168)(?:\\.\\d{1,3}){2})" +
-      "(?!172\\.(?:1[6-9]|2\\d|3[0-1])(?:\\.\\d{1,3}){2})" +
-      // IP address dotted notation octets
-      // excludes loopback network 0.0.0.0
-      // excludes reserved space >= 224.0.0.0
-      // excludes network & broacast addresses
-      // (first & last IP address of each class)
-      "(?:[1-9]\\d?|1\\d\\d|2[01]\\d|22[0-3])" +
-      "(?:\\.(?:1?\\d{1,2}|2[0-4]\\d|25[0-5])){2}" +
-      "(?:\\.(?:[1-9]\\d?|1\\d\\d|2[0-4]\\d|25[0-4]))" +
-    "|" +
-      // host name
-      "(?:(?:[a-z\\u00a1-\\uffff0-9]-*)*[a-z\\u00a1-\\uffff0-9]+)" +
-      // domain name
-      "(?:\\.(?:[a-z\\u00a1-\\uffff0-9]-*)*[a-z\\u00a1-\\uffff0-9]+)*" +
-      // TLD identifier
-      "(?:\\.(?:[a-z\\u00a1-\\uffff]{2,}))" +
-      // TLD may end with dot
-      "\\.?" +
-    ")" +
-    // port number
-    "(?::\\d{2,5})?" +
-    // resource path
-    "(?:[/?#]\\S*)?" +
-  "$", "i"
-	) // fragment locator
-  return pattern.test(str)
+	// Creates key from a struct
+	// using its properties array
+	this.keyOf = function(struct) {
+		return JSON.stringify(struct.properties)
+	}
 }

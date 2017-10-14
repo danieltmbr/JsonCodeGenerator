@@ -1,53 +1,170 @@
+
 /**
---------------------------------- Html output ----------------------------------
+------------------------------- Swift Property ---------------------------------
 */
 
-//
-function htmlOutput(structs) {
-	console.log(structs)
-	return structs
-		.map(swiftifyStruct)
-		.reduce(structsReduce, "")
+PlainProperty.prototype.swiftifiedName = function() {
+	return swiftify(this.name)
 }
 
-function structsReduce(accumulator, struct) {
-		return accumulator + structHtml(struct) + "\n\n"
+PlainProperty.prototype.swiftifiedType = function (prefix, postfix) {
+
+	switch(this.type) {
+		case "boolean":
+			return "Bool"
+		case "integer":
+			return "Int"
+		case "double":
+			return "Double"
+		case "string":
+			return "String"
+		case "date":
+			return "Date"
+		case "url":
+			return "URL"
+		case "any":
+			return "Any"
+		case "undefined":
+			return "Any"
+		default:
+			return capitalise(prefix + swiftify(this.type) + postfix)
+	}
 }
 
-function structHtml(struct) {
+PlainProperty.prototype.swiftified = function(prefix, postfix) {
+	return new PlainProperty(
+		this.key,
+		this.swiftifiedName(),
+		this.isArray,
+		this.swiftifiedType(prefix, postfix)
+	)
+}
 
-	// Declare struct
-	var structHtml = "<span class=\"definition\">struct</span> <span class=\"type\">"+struct.name+": Codable</span> {\n\n"
-	// List properties
-	structHtml += struct.properties.reduce(propertyDeclarationHtml, "") + "\n"
+/**
+-------------------------------- Swift Struct ----------------------------------
+*/
 
-	// Declare coding keys
-	if (struct.needsDecoder) {
-		structHtml += "\t<span class=\"definition\">private enum</span> <span class=\"type\">CodingKeys: String, CodingKey</span> {\n"
-		structHtml += struct.properties.reduce(propertyCodingKeyHtml, "")
-		structHtml += "\t}\n"
+Struct.prototype.swiftifiedName = function(prefix, postfix) {
+	return capitalise(prefix + swiftify(this.name) + postfix)
+}
+
+Struct.prototype.propertiesNeedsDecoder =	function(properties) {
+		for (prop of properties) {
+			if (prop.key != prop.name) {
+					return true
+			}
+		}
+		return false
+}
+
+Struct.prototype.swiftified = function(prefix, postfix) {
+	const properties = this.properties.map(property => { return property.swiftified(prefix, postfix) })
+	return new SwiftStruct(
+		this.swiftifiedName(prefix, postfix),
+		this.propertiesNeedsDecoder(properties),
+		properties
+	)
+}
+
+function SwiftStruct(name, needsDecoder, properties) {
+	this.name 				= name 					// String
+	this.needsDecoder	= needsDecoder	// Bool
+	this.properties 	= properties		// PlainProperty array
+}
+
+/**
+--------------------------- Swift Generator Config -----------------------------
+*/
+
+function SwiftConfig(letEnabled, prefix, postfix) {
+	this.letEnabled = letEnabled 	// Function, retuns Bool
+	this.prefix 		= prefix			// Function, retuns String
+	this.postfix 		= postfix			// Function, retuns String
+}
+
+/**
+------------------------------- Swift Generator --------------------------------
+*/
+
+function SwiftGenerator(config) {
+
+	this.config = config
+
+/**
+-------------------------------- HTML generator --------------------------------
+*/
+
+	this.html = function(structs) {
+		return structs
+			.map(this.swiftifyStructs)
+			.reduce(this.structsReduce, "")
 	}
 
-	return structHtml + "}"
-}
+	this.swiftifyStructs = (struct) => {
+		return struct.swiftified(
+			this.config.prefix(),
+			this.config.postfix()
+		)
+	}
 
-function propertyDeclarationHtml(accumulator, property) {
-	return accumulator + "\t<span class=\"definition\">"+propertyDefinition()+"</span> "+property.name+": <span class=\"type\">"+propertyType(property)+"</span>\n"
-}
+	this.structsReduce = (accumulator, struct) => {
+		return accumulator + this.structHtml(struct) + "\n\n"
+	}
 
-function propertyCodingKeyHtml(accumulator, property) {
-	var key = "\t\t<span class=\"definition\">case</span> "+property.name
-	key += (property.key != property.name) ? " = <span class=\"string\">\""+property.key+"\"</span>\n" : "\n"
-	return accumulator + key
-}
+	this.structHtml = function(struct) {
 
-function propertyDefinition() {
-	return letEnabled() ? "let" : "var"
-}
+		// Declare struct html
+		var html = "<span class=\"definition\">struct</span> <span class=\"type\">"+struct.name+": Codable</span> {\n\n"
+		// List properties
+		html += struct.properties.reduce(this.propertyDeclarationHtml, "") + "\n"
 
-function propertyType(property) {
-	const todo = property.type == "Any" ? "</span> <span class=\"comment\">// TODO: Please provide a codable type, because Any isn't one." : ""
-		return (property.isArray ? "["+property.type+"]" : property.type) + todo
+		// Declare coding keys
+		if (struct.needsDecoder) {
+			html += "\t<span class=\"definition\">private enum</span> <span class=\"type\">CodingKeys: String, CodingKey</span> {\n"
+			html += struct.properties.reduce(this.propertyCodingKeyHtml, "")
+			html += "\t}\n"
+		}
+
+		return html + "}"
+	}
+
+	this.propertyDeclarationHtml = (acc, property) => {
+		return acc
+			+ "\t<span class=\"definition\">"
+			+ this.propertyDefinition()
+			+ "</span> "+property.name
+			+ ": <span class=\"type\">"
+			+ this.propertyType(property)
+			+ "</span>\n"
+	}
+
+	this.propertyCodingKeyHtml = (accumulator, property) => {
+		var key = "\t\t<span class=\"definition\">case</span> "+property.name
+		key += (property.key != property.name) ? " = <span class=\"string\">\""+property.key+"\"</span>\n" : "\n"
+		return accumulator + key
+	}
+
+	this.propertyDefinition = function() {
+		return this.config.letEnabled() ? "let" : "var"
+	}
+
+	this.propertyType = function(property) {
+		const todo = property.type == "Any" ? "</span> <span class=\"comment\">// TODO: Please provide a codable type, because Any isn't one." : ""
+			return (property.isArray ? "["+property.type+"]" : property.type) + todo
+	}
+
+/**
+-------------------------------- File generator --------------------------------
+*/
+
+	this.file = function(structs) {
+
+	}
+
+/**
+------------------------------- General methods --------------------------------
+*/
+
 }
 
 /**
@@ -78,55 +195,6 @@ function createDateExtensionHtml(dateFormat) {
 ------------------------------- Helper functions -------------------------------
 */
 
-function swiftifyStruct(struct) {
-	const properties = struct.properties.map(swiftifyProperty)
-	return {
-		name: swiftifyStructName(struct.name),
-		needsDecoder: propertiesNeedsDecoder(properties),
-		properties: properties
-	}
-}
-
-function swiftifyProperty(property) {
-	return {
-		key: property.key,
-		name: swiftifyPropertyName(property.name),
-		isArray: property.isArray,
-		type: swiftifyType(property.type)
-	}
-}
-
-function swiftifyStructName(name) {
-	return capitalise(swiftify(name)+"Dto")
-}
-
-function swiftifyPropertyName(name) {
-	return swiftify(name)
-}
-
-function swiftifyType(type) {
-
-	switch(type) {
-		case "boolean":
-			return "Bool"
-		case "integer":
-			return "Int"
-		case "double":
-			return "Double"
-		case "string":
-			return "String"
-		case "date":
-			return "Date"
-		case "url":
-			return "URL"
-		case "any":
-			return "Any"
-		case "undefined":
-			return "undefined" // TODO: maybe should be replaced with Any
-		default: return swiftifyStructName(type)
-	}
-}
-
 function swiftify(key) {
 	const words = key
 		.replace(/[-_ ]/g, ' ')
@@ -137,14 +205,4 @@ function swiftify(key) {
 		name += i == 0 ? words[i] : capitalise(words[i])
 	}
 	return name
-}
-
-function propertiesNeedsDecoder(properties) {
-
-	for (prop of properties) {
-		if (prop.key != prop.name) {
-				return true
-		}
-	}
-	return false
 }
