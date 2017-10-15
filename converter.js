@@ -2,10 +2,10 @@
 ------------------------------------ Global ------------------------------------
 */
 
-const parserConfig = new ParserConfig(getRootName, getIntEnabled, getDateFormat)
+const parserConfig = new ParserConfig(getRootName, getDynamicNumberEnabled, getDateFormat)
 const parser = new Parser(parserConfig)
 
-const swiftConfig = new SwiftConfig(getLetEnabled, getPrefix, getPostfix)
+const swiftConfig = new SwiftConfig(getConstansEnabled, getPrefix, getPostfix)
 const swiftGenerator = new SwiftGenerator(swiftConfig)
 
 function convert() {
@@ -15,6 +15,46 @@ function convert() {
 	const html = swiftGenerator.html(structs)
 	displayCode(html)
 }
+
+/**
+------------------------------- Action handlers --------------------------------
+*/
+
+$("#convert").on('click', function() {
+	convert()
+})
+
+$("#clear-input").on('click', function() {
+	$("#ta-json").html("")
+})
+
+$("#close-output").on('click', function() {
+	$("#output").addClass("hidden")
+})
+
+$("#copy-output").on('click', function() {
+	ClipboardHelper.copyElement($('#code').first());
+})
+
+$("#btn-constans-enabled").on('click', function() {
+	$("#btn-constans-enabled").addClass("selected")
+	$("#btn-constans-disabled").removeClass("selected")
+})
+
+$("#btn-constans-disabled").on('click', function() {
+	$("#btn-constans-disabled").addClass("selected")
+	$("#btn-constans-enabled").removeClass("selected")
+})
+
+$("#btn-numbers-dynamic").on('click', function() {
+	$("#btn-numbers-dynamic").addClass("selected")
+	$("#btn-numbers-double").removeClass("selected")
+})
+
+$("#btn-numbers-double").on('click', function() {
+	$("#btn-numbers-double").addClass("selected")
+	$("#btn-numbers-dynamic").removeClass("selected")
+})
 
 /**
 ------------------------------- Helper functions -------------------------------
@@ -35,54 +75,55 @@ function getJson() {
 }
 
 function getJsonString() {
-	return document.getElementById("ta-json").value
+	return $("#ta-json").val()
 }
 
 function getRootName() {
-	const root = document.getElementById("tb-root-name").value
+	const root = $("#tb-root-name").val()
 	return root.length > 0 ? root : "Root"
 }
 
 function getPrefix() {
-	return document.getElementById("tb-type-prefix").value
+	return $("#tb-type-prefix").val()
 }
 
 function getPostfix() {
-	return document.getElementById("tb-type-postfix").value
-}
-
-function getIntEnabled() {
-	return !document.getElementById("cb-double").checked
+	return $("#tb-type-postfix").val()
 }
 
 function getDateFormat() {
-	return document.getElementById("tb-dateformat").value
+	const format = $("#tb-dateformat").val()
+	return format.length > 0 ? format : "YYYY-MM-DDTHH:mm:ss.sssZ"
 }
 
-function getLetEnabled() {
-	return document.getElementById("cb-let").checked
+function getDynamicNumberEnabled() {
+	return $("#btn-numbers-dynamic").hasClass('selected')
+}
+
+function getConstansEnabled() {
+	return $("#btn-constans-enabled").hasClass('selected')
 }
 
 function capitalise(string) {
     return string.charAt(0).toUpperCase() + string.slice(1) //.toLowerCase()
 }
 
-function displayCode(swiftCode) {
-	document.getElementById("swift").innerHTML = swiftCode
+function displayCode(code) {
+	$("#code").html(code)
+	$("#output").removeClass("hidden")
 }
 
 function displayDateExtension(dateHtml) {
-	document.getElementById("date-extension").innerHTML = dateHtml
+	$("#date-extension").html(dateHtml)
 }
 
 function invalidInput() {
-	document.getElementById("h3-json").className = "error"
-	document.getElementById("ta-json").className = "error"
+	$("#output").addClass("hidden")
+	$("#error").html('<div class="alert alert-danger alert-dismissable fade in"><a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a><strong>Error!</strong> Couldn\'t parse the provided JSON.</div>')
 }
 
 function removeError() {
-	document.getElementById("h3-json").className = ""
-	document.getElementById("ta-json").className = ""
+	$("#error").html("")
 }
 
 function isURL(str) {
@@ -123,4 +164,37 @@ function isURL(str) {
   "$", "i"
 	) // fragment locator
   return pattern.test(str)
+}
+
+var ClipboardHelper = {
+    copyElement: function ($element)
+    {
+       this.copyText($element.text())
+    },
+    copyText:function(text) // Linebreaks with \n
+    {
+			console.log(text)
+        var $tempInput =  $("<textarea>");
+        $("body").append($tempInput);
+        $tempInput.val(text).select();
+				try {
+    	  	document.execCommand("copy");
+					$tempInput.remove();
+    		} catch(e) {
+					$tempInput.remove();
+					alert("Coulnd't copy the code to the clipboard. Your browser might not supported. Please try to update it.")
+    		}
+    }
+}
+
+function download() {
+	var content = "What's up , hello world";
+	// any kind of extension (.txt,.cpp,.cs,.bat)
+	var filename = "hello.txt";
+
+	var blob = new Blob([content], {
+	 type: "text/plain;charset=utf-8"
+	});
+
+	saveAs(blob, filename);
 }

@@ -1,81 +1,158 @@
 <!doctype html>
-<html>
-<head>
-<title>JSON to Swift Converter</title>
-<link rel="stylesheet" type="text/css" href="stylesheet.css">
-<script type="text/javascript" src="moment.min.js"></script>
-<script type="text/javascript" src="parser.js"></script>
-<script type="text/javascript" src="swift-generator.js"></script>
-<script type="text/javascript" src="converter.js"></script>
-<head>
-<body>
-<div id="content">
+<html lang="en">
+  <head>
+    <title>JSON Code Generator</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <!-- jQuery library -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <!-- Latest compiled JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 
-<h1>JSON to Swift Codable</h1>
+    <script type="text/javascript" src="moment.min.js"></script>
+    <script type="text/javascript" src="parser.js"></script>
+    <script type="text/javascript" src="swift-generator.js"></script>
 
-<div id="preferences">
-	<form>
-		<div><input type="checkbox" id="cb-let" checked="checked"/>Declare properties as <strong>let</strong></div>
-		<div><input type="checkbox" id="cb-double"/>Numbers as <strong>Double</strong></div>
-		<div class="naming">
-			<div>Name of the root object: <input type="text" id="tb-root-name" value="Root" placeholder="Root name"/></div>
-			<div>Type name prefix: <input type="text" id="tb-type-prefix" value="" placeholder="prefix"/></div>
-			<div>Type name postfix: <input type="text" id="tb-type-postfix" value="Dto" placeholder="postfix" /></div>
-		</div>
-		<!-- YYYY-MM-DDTHH:mm:ss.sssZ - 2015-07-04T23:10:00.000+02:00 -->
-		<div class="date">
-			<div>Date format: <input type="text" id="tb-dateformat" value="YYYY-MM-DDTHH:mm:ss.sssZ"/></div>
-			<div><input id="b-convert" type="button" value="Generate Date formatter" onclick="generateDateExtension()" style="width:294px;" /></div><br/>
-			<div style="margin: 0;"><pre><code id="date-extension"></code></pre></div>
-		</div>
-	</form>
-</div>
+    <link rel="stylesheet" href="stylesheet.css">
 
-<div id="input">
-	<h3 id="h3-json">JSON:</h3>
-	<form>
-		<textarea id="ta-json" placeholder="Insert your JSON here..." autofocus>{
-	"id":0,
-	"full-name":"String",
-	"created_at":"2015-07-04T23:10:00.000+02:00",
-	"approved": false,
-	"zip_code":"2000",
-	"description":"String",
-	"email":"String",
-	"follower_count": 1212,
-	"avatar-url": "https://www.biography.com/.image/t_share/MTQ3NjM5MjU4NjcxMjI4Mjky/kanye_west_photo_by_frank_micelotta_getty_images_entertainment_getty_51329049.jpg",
-	"current_user_follows":true,
-	"location": {
-		"latitude":  47.16884,
-		"longitude": 19.134245,
-		"address":"String",
-		"addressAdditional":"String"
-	},
-  "location2": {
-		"latitude":  47.16884,
-		"longitude": 19.134245,
-		"address":"String",
-		"addressAdditional":"String"
-	},
-	"objectArray": [{
-		"propr1":  47.16884,
-		"prop2":"String"
-	}],
-	"emptyArray": [],
-	"intArray": [1, 2, 3]
+  </head>
+
+  <body>
+
+  <div class="container-fluid">
+
+    <div class="row">
+      <div id="title" class="col-xs-12 col-md-8">
+        <h1>JSON to Code Generator</h1>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-7 col-lg-6 col-md-push-5">
+        <div class="row">
+          <div id="preferences" class="col-md-10">
+            <div class="vertical-text-content">Preferences</div>
+          </div>
+          <div id="name" class="col-md-10">
+            <div class="input-group">
+              <span class="input-group-addon">Root object name:</span>
+              <input id="tb-root-name" type="text" class="form-control" name="msg" placeholder="Root">
+            </div>
+          </div>
+          <div id="prefix" class="col-xs-6 col-md-5">
+            <div class="input-group">
+              <span class="input-group-addon">Prefix:</span>
+              <input id="tb-type-prefix" type="text" class="form-control" name="msg" placeholder="No prefix">
+            </div>
+          </div>
+          <div id="postfix" class="col-xs-6 col-md-5">
+            <div class="input-group">
+              <span class="input-group-addon">Postfix:</span>
+              <input id="tb-type-postfix" type="text" class="form-control" name="msg" placeholder="No postfix">
+            </div>
+          </div>
+          <div id="date" class="col-md-10">
+            <div class="input-group">
+              <span class="input-group-addon">Date format:</span>
+              <input id="tb-dateformat" type="text" class="form-control" name="msg" placeholder="YYYY-MM-DDTHH:mm:ss.sssZ">
+            </div>
+          </div>
+          <div id="constants" class="col-md-10">
+            <div class="input-group">
+              <span class="input-group-addon">Enable constants:</span>
+              <button id="btn-constans-disabled" class="btn selectable">Off</button><button id="btn-constans-enabled" class="btn selectable selected">On</button>
+            </div>
+          </div>
+          <div id="numbers" class="col-md-10">
+            <div class="input-group">
+              <span class="input-group-addon">Enable dynamic numbers:</span>
+              <button id="btn-numbers-double" class="btn selectable">Off</button><button id="btn-numbers-dynamic" class="btn selectable selected">On</button>
+            </div>
+          </div>
+          <div class="col-md-10"><div id="empty"></div></div>
+          <div id="language" class="col-md-12">
+            Choose output languagage <button id="btn-language-swift" class="btn selectable selected">Swift</button><button id="btn-language-go" class="btn selectable disabled">Go</button>
+          </div>
+          <div id="error" class="col-md-12"></div>
+
+          <div id="insert-json" class="col-md-12">
+            <div class="vertical-text-content">Insert JSON</div>
+          </div>
+          <div id="json" class="col-xs-12">
+            <button id="clear-input" class="btn float">Clear</button>
+            <div class="input-group">
+              <textarea class="form-control" id="ta-json" autofocus>{
+    "id":0,
+    "full-name":"String",
+    "created_at":"2015-07-04T23:10:00.000+02:00",
+    "approved": false,
+    "zip_code":"2000",
+    "description":"String",
+    "email":"String",
+    "follower_count": 1212,
+    "avatar-url": "https://goo.gl/K8Xk81",
+    "current_user_follows":true,
+    "location": {
+      "latitude":  47.16884,
+      "longitude": 19.134245,
+      "address":"String",
+      "addressAdditional":"String"
+    },
+    "location2": {
+      "latitude":  47.16884,
+      "longitude": 19.134245,
+      "address":"String",
+      "addressAdditional":"String"
+    },
+    "objectArray": [{
+      "propr1":  47.16884,
+      "prop2":"String"
+    }],
+    "emptyArray": [],
+    "intArray": [1, 2, 3]
 }</textarea>
-		<input id="b-convert" type="button" value="Convert" onclick="convert()" />
-	</form>
-</div>
+            </div>
+          </div>
+          <div class="col-md-12">
+            <button class="btn" id="convert">Convert</button>
+            <button class="btn disabled">Convert & download as .zip</button>
+          </div>
+          <div id="output" class="col-md-12 hidden">
+            <button id="copy-output" class="btn float">Copy to clipboard</button>
+            <button id="close-output" class="btn float">x</button>
+            <pre><code id="code"></code></pre>
+          </div>
+          <div id="separator" class="col-md-12"></div>
+        </div>
+      </div>
+      <div id="info" class="col-md-5 col-md-pull-7 col-lg-pull-6">
+        <div class="row">
+          <div id="description" class="col-md-12">
+            <span class="choose">Choose</span> declaring constants. <span class="choose">Choose</span> dynamic number types according to the value. <span class="choose">Choose</span> a custom root object name. <span class="choose">Choose</span> custom prefix to the generated types. <span class="choose">Choose</span> a custom postfix to them also. <span class="choose">Choose</span> a specified date format. <span class="choose">Choose</span> generating code instead of writing it. <span class="choose">Choose</span> output language. <a href="https://www.youtube.com/watch?v=PgsfVJMWL0E" class="secret"><span class="choose">Choose</span> saving time, cause time is life.</a> <span class="choose">Choose</span> Open Source. <a href="https://www.youtube.com/watch?v=t0D4ekTODuA" class="secret"><span class="choose">Choose</span> life</a>.
+          </div>
+          <div id="project" class="col-md-12">
+            <a href="https://github.com/danieltmbr/JsonCodeGenerator">View the project on GitHub.</a><br>
+            danieltmbr/JsonGenerator
+          </div>
+          <div class="col-md-12">
+            <a href="https://github.com/danieltmbr/JsonCodeGenerator#fork-destination-box"><button class="btn">Fork on GitHub</button></a>
+            <a href="https://github.com/danieltmbr/JsonCodeGenerator/archive/master.zip"><button class="btn">Download .zip</button></a>
+          </div>
+          <div id="contact" class="col-md-12">
+            Created & maintained by <a href="mailto:daniel@tmbr.me" class="secret">danieltmbr</a><br>
+            Hosted on GitHub Pages<br>
+            Theme by <a href="mailto:daniel@tmbr.me" class="secret">danieltmbr</a>, inspired by Trainspotting<br>
+            <br><a href="https://www.youtube.com/watch?v=t0D4ekTODuA" class="secret">But why whould I want to do a thing like that?</a>
+          </div>
+        </div>
+      </div>
+      </div>
+    </div>
+  </div>
 
-<div id="output">
-	<h3>Swift:</h3>
-	<pre><code id="swift"></code></pre>
-</div>
-
-<footer>2017 - Created by <a href="mailto:daniel@tmbr.me">danieltmbr</a>;</footer>
-
-</div>
+  <script type="text/javascript" src="converter.js"></script>
 
 </body>
 </html>
