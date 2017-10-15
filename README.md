@@ -1,7 +1,10 @@
 # Json Code Generator
 
 A tiny script for generating Code from JSON.
+
 Code: right now it only support Swift 4 (with Codable protocol)
+
+[Try it online](http://danieltmbr.github.io/JsonCodeGenerator/)
 
 ## Features
 
@@ -28,8 +31,7 @@ Code: right now it only support Swift 4 (with Codable protocol)
 
 ## Help
 
-This is my very first hobby project where I'm trying to use JS's prototype related features.
-This is also my very first project where I'm using Bootstrap CSS. So:
+This is my very first hobby project where I'm trying to use JS's prototype related features. This is also my very first project where I'm using Bootstrap CSS.  So:
 
 * Post any comment or suggestion on the code to improve it
 * Post any issues you find
