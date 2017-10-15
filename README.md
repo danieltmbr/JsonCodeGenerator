@@ -1,6 +1,7 @@
 # Json Code Generator
 
-A tiny script for generating Swift 4 (Codable) Structs from JSON.
+A tiny script for generating Code from JSON.
+Code: right now it only support Swift 4 (with Codable protocol)
 
 ## Features
 
@@ -17,8 +18,20 @@ A tiny script for generating Swift 4 (Codable) Structs from JSON.
 * Responsive layout
 * Nice Xcode coloured output
 
+## Future improvements
+
+* Support other languages
+    * Go
+    * Kotlin
+    * Java (?)
+* Generate output files > .zip them > download them
+
 ## Help
 
+This is my very first hobby project where I'm trying to use JS's prototype related features.
+This is also my very first project where I'm using Bootstrap CSS. So:
+
+* Post any comment or suggestion on the code to improve it
 * Post any issues you find
 * Post new feature requests
 * Pull requests are welcome
@@ -29,4 +42,4 @@ danieltmbr, daniel@tmbr.me
 
 ## License
 
-Bencode is available under the MIT license. See the LICENSE file for more info.
+Json Code Generator is available under the MIT license. See the LICENSE file for more info.
