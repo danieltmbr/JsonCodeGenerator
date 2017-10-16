@@ -28,6 +28,7 @@ Code: right now it only support Swift 4 (with Codable protocol)
     * Kotlin
     * Java (?)
 * Generate output files > .zip them > download them
+* Support heterogen collection parsing
 
 ## Help
 
