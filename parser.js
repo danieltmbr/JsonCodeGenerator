@@ -105,7 +105,7 @@ function Parser(config) {
 	//				 name - name of the root object
 	// returns: Struct
 	this.parseObject = function(object, name) {
-		const properties = typeof(object) == "object"
+		const properties = object != null && typeof(object) == "object"
 			? Object.keys(object).map(key => this.parseProperty(key, object[key]))
 			: null
 		return new Struct(name, properties)
